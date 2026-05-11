@@ -28,6 +28,8 @@ class CustomTextField extends StatelessWidget {
   final Widget? suffixIcon; // optional icon on the right
   final TextInputType keyboardType; // number, email, text, etc.
   final TextInputAction textInputAction; // what the keyboard "done" button does
+  final ValueChanged<String>? onChanged;
+  final AutovalidateMode autovalidateMode;
 
   const CustomTextField({
     super.key,
@@ -39,6 +41,8 @@ class CustomTextField extends StatelessWidget {
     this.suffixIcon,
     this.keyboardType = TextInputType.text,
     this.textInputAction = TextInputAction.next,
+    this.onChanged,
+    this.autovalidateMode = AutovalidateMode.onUserInteraction,
   });
 
   @override
@@ -63,6 +67,8 @@ class CustomTextField extends StatelessWidget {
           obscureText: obscureText,
           keyboardType: keyboardType,
           textInputAction: textInputAction,
+          onChanged: onChanged,
+          autovalidateMode: autovalidateMode,
           style: const TextStyle(fontSize: 15, color: Color(0xFF111827)),
           decoration: InputDecoration(
             hintText: hint,

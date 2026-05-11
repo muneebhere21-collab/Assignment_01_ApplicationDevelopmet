@@ -26,9 +26,11 @@
 //   6. LoginScreen sees success → navigates to Dashboard
 // ============================================================
 
+import 'dart:convert';
 import 'package:flutter/foundation.dart'; // provides ChangeNotifier
 import '../enums/app_enums.dart';
 import '../models/user_model.dart';
+import 'session_manager.dart';
 
 class AuthController extends ChangeNotifier {
   // ── State Variables ────────────────────────────────────────
@@ -55,12 +57,29 @@ class AuthController extends ChangeNotifier {
   bool get rememberMe => _rememberMe;
   bool get isLoggedIn => _currentUser != null;
 
+  // ── Session Management ─────────────────────────────────────
+  Future<void> loadSession() async {
+    final session = await SessionManager.getSession();
+    _rememberMe = session['rememberMe'];
+    
+    if (_rememberMe && session['userData'] != null) {
+      try {
+        final Map<String, dynamic> userMap = jsonDecode(session['userData']);
+        _currentUser = UserModel.fromJson(userMap);
+      } catch (e) {
+        debugPrint('Error loading user session: $e');
+      }
+    }
+    notifyListeners();
+  }
+
   // ── Register Method ────────────────────────────────────────
   // Called when the user submits the Registration form.
   // async/await: this pretends to be async (like a real network call)
   // using Future.delayed to simulate a loading delay.
   Future<void> register({
-    required String fullName,
+    required String firstName,
+    required String lastName,
     required String email,
     required String password,
     required Gender gender,
@@ -83,7 +102,8 @@ class AuthController extends ChangeNotifier {
 
     // Step 4: Create user and save to our in-memory "database"
     final newUser = UserModel(
-      fullName: fullName,
+      firstName: firstName,
+      lastName: lastName,
       email: email.toLowerCase(),
       password: password,
       gender: gender,
@@ -130,14 +150,20 @@ class AuthController extends ChangeNotifier {
     _currentUser = user;
     _rememberMe = rememberMe;
     _status = AuthStatus.success;
+    
+    // Save session to disk
+    final userDataJson = rememberMe ? jsonEncode(user.toJson()) : null;
+    await SessionManager.saveSession(email, rememberMe, userDataJson);
+    
     notifyListeners();
   }
 
   // ── Logout Method ──────────────────────────────────────────
-  void logout() {
+  Future<void> logout() async {
     _currentUser = null;
     _status = AuthStatus.idle;
     _errorMessage = '';
+    await SessionManager.clearSession();
     notifyListeners();
   }
 

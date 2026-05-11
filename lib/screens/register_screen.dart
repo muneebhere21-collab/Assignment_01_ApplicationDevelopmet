@@ -50,7 +50,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   // controller.text gives us what the user typed.
   // We MUST dispose() them when the screen is destroyed to
   // free up memory — see dispose() below.
-  final _nameController = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
@@ -59,15 +60,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _showPassword = false; // toggle password visibility
   bool _showConfirmPassword = false;
   Gender? _selectedGender; // null means not selected yet
+  bool _isFormValid = false;
 
   @override
   void dispose() {
     // IMPORTANT: Always dispose controllers to prevent memory leaks
-    _nameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmController.dispose();
     super.dispose();
+  }
+
+  // Real-time validation check
+  void _updateFormStatus() {
+    setState(() {
+      _isFormValid = _formKey.currentState?.validate() ?? false;
+    });
   }
 
   // ── Submit Handler ─────────────────────────────────────────
@@ -88,7 +98,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     // Step 2: Call the controller to register
     await widget.authController.register(
-      fullName: _nameController.text.trim(),
+      firstName: _firstNameController.text.trim(),
+      lastName: _lastNameController.text.trim(),
       email: _emailController.text.trim(),
       password: _passwordController.text,
       gender: _selectedGender!,
@@ -155,13 +166,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 28),
 
-                // ── Full Name Field ────────────────────────
+                // ── First Name Field ────────────────────────
                 CustomTextField(
-                  label: 'Full Name',
-                  hint: 'Enter your full name',
-                  controller: _nameController,
-                  validator: AppValidator.validateFullName,
+                  label: 'First Name',
+                  hint: 'Enter your first name',
+                  controller: _firstNameController,
+                  validator: (v) => AppValidator.validateRequired(v, 'First Name'),
                   keyboardType: TextInputType.name,
+                  onChanged: (_) => _updateFormStatus(),
+                ),
+                const SizedBox(height: 16),
+                
+                // ── Last Name Field ────────────────────────
+                CustomTextField(
+                  label: 'Last Name',
+                  hint: 'Enter your last name',
+                  controller: _lastNameController,
+                  validator: (v) => AppValidator.validateRequired(v, 'Last Name'),
+                  keyboardType: TextInputType.name,
+                  onChanged: (_) => _updateFormStatus(),
                 ),
                 const SizedBox(height: 16),
 
@@ -172,6 +195,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: _emailController,
                   validator: AppValidator.validateEmail,
                   keyboardType: TextInputType.emailAddress,
+                  onChanged: (_) => _updateFormStatus(),
                 ),
                 const SizedBox(height: 16),
 
@@ -244,6 +268,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       onChanged: (value) {
                         // setState() triggers a rebuild with the new value
                         setState(() => _selectedGender = value);
+                        _updateFormStatus();
                       },
                     ),
                   ],
@@ -257,6 +282,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: _passwordController,
                   validator: AppValidator.validatePassword,
                   obscureText: !_showPassword,
+                  onChanged: (_) => _updateFormStatus(),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _showPassword ? Icons.visibility_off : Icons.visibility,
@@ -280,6 +306,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   )(value),
                   obscureText: !_showConfirmPassword,
                   textInputAction: TextInputAction.done,
+                  onChanged: (_) => _updateFormStatus(),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _showConfirmPassword
@@ -346,7 +373,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                         CustomButton(
                           text: 'Create Account',
-                          onPressed: _handleRegister,
+                          onPressed: _isFormValid ? _handleRegister : null,
                           isLoading: isLoading,
                         ),
                       ],

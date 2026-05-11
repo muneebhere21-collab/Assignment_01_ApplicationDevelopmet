@@ -1,24 +1,34 @@
-# my_app
+# EduTrack - Student Portal Application
 
-A new Flutter project.
+A complete multi-screen Flutter application featuring user authentication, form validation, and session persistence.
+
+## Student Information
+- **Name:** [Student Name]
+- **ID:** [Student ID]
+
+## Features
+- **Authentication System:** Secure registration and login flow with mock backend logic.
+- **Form Validation:** Comprehensive real-time validation for all input fields.
+- **Session Persistence:** "Remember Me" functionality using `shared_preferences`.
+- **Clean Architecture:** Proper separation of UI, business logic (controllers), and data models.
+- **Premium UI:** Modern design with collapsing app bars, custom gradients, and responsive layouts.
+
+## Screens
+1. **Registration Screen:** Collects First Name, Last Name, Email, Gender, and Password. Includes complex password strength validation.
+2. **Login Screen:** Authenticates users and offers session persistence. Features a password visibility toggle.
+3. **Dashboard:** Displays user profile info and a list of academic subjects.
+4. **Detail Screen:** Provides in-depth information about selected subjects including description and schedule.
+
+## Tech Stack
+- **Framework:** Flutter
+- **Language:** Dart
+- **State Management:** ChangeNotifier (Provider pattern)
+- **Local Persistence:** SharedPreferences
 
 ## Getting Started
+1. Clone the repository.
+2. Run `flutter pub get` to install dependencies.
+3. Run the application using `flutter run`.
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-
-<img width="248" height="510" alt="image" src="https://github.com/user-attachments/assets/b29aba36-91eb-40c4-b1bf-ffedc986cc6a" />
-<img width="251" height="508" alt="image" src="https://github.com/user-attachments/assets/d7d987de-8453-4229-895e-978bc57c3880" />
-<img width="244" height="505" alt="image" src="https://github.com/user-attachments/assets/6fe70d52-5b9b-47ff-a603-438db37e91f7" />
-<img width="253" height="510" alt="image" src="https://github.com/user-attachments/assets/a3adb9c3-5658-4ef6-ac88-677be84a379c" />
-
-
+## Screenshots
+*(Add screenshots here after running the app)*

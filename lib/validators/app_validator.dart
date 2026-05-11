@@ -28,17 +28,13 @@
 // ============================================================
 
 class AppValidator {
-  // ── Validate Full Name ─────────────────────────────────────
-  // Rules: not empty, minimum 2 characters
-  static String? validateFullName(String? value) {
-    // trim() removes leading/trailing whitespace so "  " is treated as empty
+  // ── Validate Required Field ──────────────────────────────
+  // Rules: not empty
+  static String? validateRequired(String? value, String fieldName) {
     if (value == null || value.trim().isEmpty) {
-      return 'Full name is required';
+      return '$fieldName is required';
     }
-    if (value.trim().length < 2) {
-      return 'Name must be at least 2 characters';
-    }
-    return null; // null = valid
+    return null;
   }
 
   // ── Validate Email ─────────────────────────────────────────

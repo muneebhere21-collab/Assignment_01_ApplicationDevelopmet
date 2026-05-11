@@ -22,36 +22,55 @@ import '../enums/app_enums.dart';
 
 class UserModel {
   // The actual data fields for a user
-  final String fullName;
+  final String firstName;
+  final String lastName;
   final String email;
   final String password; // In a real app, NEVER store plain password!
   final Gender gender;
 
   // Constructor — 'required' means the caller MUST provide these
-  // Named parameters (wrapped in {}) mean you call it like:
-  //   UserModel(fullName: 'Ali', email: 'ali@x.com', ...)
-  // This is safer than positional parameters because you can't
-  // accidentally mix up the order of arguments.
   const UserModel({
-    required this.fullName,
+    required this.firstName,
+    required this.lastName,
     required this.email,
     required this.password,
     required this.gender,
   });
 
-  // copyWith — creates a new UserModel with some fields changed.
-  // WHY? Models are immutable (final fields). To "update" a user
-  // you create a new one with the changed fields.
-  // Example: user.copyWith(fullName: 'New Name')
+  // Helper for full name
+  String get fullName => '$firstName $lastName';
+
+  // JSON serialization
+  Map<String, dynamic> toJson() {
+    return {
+      'firstName': firstName,
+      'lastName': lastName,
+      'email': email,
+      'password': password,
+      'gender': gender.index,
+    };
+  }
+
+  factory UserModel.fromJson(Map<String, dynamic> json) {
+    return UserModel(
+      firstName: json['firstName'],
+      lastName: json['lastName'],
+      email: json['email'],
+      password: json['password'],
+      gender: Gender.values[json['gender']],
+    );
+  }
+
   UserModel copyWith({
-    String? fullName,
+    String? firstName,
+    String? lastName,
     String? email,
     String? password,
     Gender? gender,
   }) {
     return UserModel(
-      fullName:
-          fullName ?? this.fullName, // ?? means "use new value OR keep old"
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
       email: email ?? this.email,
       password: password ?? this.password,
       gender: gender ?? this.gender,
