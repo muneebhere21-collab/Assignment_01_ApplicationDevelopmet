@@ -7,34 +7,45 @@
 //   • A list of subjects (from SubjectData)
 //   • Each subject is tappable → navigates to DetailScreen
 //   • Logout button → returns to Login
-//
-// WHY ListView.builder instead of ListView?
-// ListView.builder creates list items LAZILY — only the visible
-// ones are built. If you had 1000 subjects, ListView would build
-// all 1000 at once. ListView.builder only builds the ~6 visible
-// ones. For 3 subjects it doesn't matter, but it's best practice.
+//   • BottomNavigationBar to toggle between static subjects and API Courses CRUD.
 // ============================================================
 
 import 'package:flutter/material.dart';
 import '../controllers/auth_controller.dart';
+import '../controllers/course_controller.dart';
 import '../controllers/subject_data.dart';
 import '../models/user_model.dart';
+import 'course_list_view.dart';
 import 'detail_screen.dart';
 import 'login_screen.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   final AuthController authController;
 
   const DashboardScreen({super.key, required this.authController});
 
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  late final CourseController _courseController;
+  int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _courseController = CourseController();
+  }
+
   void _handleLogout(BuildContext context) {
-    authController.logout();
+    widget.authController.logout();
     // pushAndRemoveUntil navigates to Login and REMOVES all previous
     // screens from the navigation stack. So pressing Back won't work.
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(
-        builder: (_) => LoginScreen(authController: authController),
+        builder: (_) => LoginScreen(authController: widget.authController),
       ),
       (route) => false, // remove ALL routes
     );
@@ -42,135 +53,177 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = authController
-        .currentUser!; // safe because we only get here after login
+    final user = widget.authController.currentUser!; // safe because we only get here after login
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
-      body: CustomScrollView(
-        // CustomScrollView lets us mix different scrollable widgets
-        // (like a SliverAppBar that collapses on scroll + a list)
-        slivers: [
-          // ── Collapsing App Bar ─────────────────────────
-          SliverAppBar(
-            expandedHeight: 200,
-            floating: false,
-            pinned: true, // stays visible when collapsed
-            automaticallyImplyLeading: false,
-            backgroundColor: const Color(0xFF1D4ED8),
-            flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFF1D4ED8), Color(0xFF3B82F6)],
-                  ),
-                ),
-                child: SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Row(
-                          children: [
-                            // Avatar circle with first letter of name
-                            _buildAvatar(user),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Hello, ${user.fullName.split(' ').first}! 👋',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    user.email,
-                                    style: TextStyle(
-                                      color: Colors.white.withOpacity(0.8),
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    user.gender.name,
-                                    style: TextStyle(
-                                      color: Colors.white.withOpacity(0.7),
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            // The AppBar actions (top-right) — Logout button
-            actions: [
-              IconButton(
-                icon: const Icon(
-                  Icons.logout_rounded,
-                  color: Colors.white,
-                  size: 22,
-                ),
-                tooltip: 'Logout',
-                onPressed: () => _handleLogout(context),
-              ),
-              const SizedBox(width: 4),
-            ],
-          ),
-
-          // ── Section Title ──────────────────────────────
-          const SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(20, 24, 20, 12),
-              child: Text(
-                'My Subjects',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF111827),
-                ),
-              ),
-            ),
-          ),
-
-          // ── Subjects List ──────────────────────────────
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate((context, index) {
-                final subject = SubjectData.subjects[index];
-                return _SubjectCard(
-                  subject: subject,
-                  onTap: () {
-                    // Navigate to Detail screen, passing the subject
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => DetailScreen(subject: subject),
-                      ),
-                    );
-                  },
-                );
-              }, childCount: SubjectData.subjects.length),
-            ),
+      // ── Main Page Content Switcher ──────────────────────────
+      body: IndexedStack(
+        index: _currentIndex,
+        children: [
+          _buildHomeDashboard(context, user),
+          CourseListView(
+            controller: _courseController,
+            authController: widget.authController,
           ),
         ],
       ),
+      
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        selectedItemColor: const Color(0xFF1D4ED8), // Primary Blue
+        unselectedItemColor: Colors.grey.shade400,
+        backgroundColor: Colors.white,
+        elevation: 8,
+        type: BottomNavigationBarType.fixed,
+        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+        unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.dashboard_rounded),
+            activeIcon: Icon(Icons.dashboard_rounded, color: Color(0xFF1D4ED8)),
+            label: 'Dashboard',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.school_rounded),
+            activeIcon: Icon(Icons.school_rounded, color: Color(0xFF1D4ED8)),
+            label: 'Courses',
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Existing Dashboard Content (Tab 0) ───────────────────
+  Widget _buildHomeDashboard(BuildContext context, UserModel user) {
+    return CustomScrollView(
+      // CustomScrollView lets us mix different scrollable widgets
+      // (like a SliverAppBar that collapses on scroll + a list)
+      slivers: [
+        // ── Collapsing App Bar ─────────────────────────
+        SliverAppBar(
+          expandedHeight: 200,
+          floating: false,
+          pinned: true, // stays visible when collapsed
+          automaticallyImplyLeading: false,
+          backgroundColor: const Color(0xFF1D4ED8),
+          flexibleSpace: FlexibleSpaceBar(
+            background: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF1D4ED8), Color(0xFF3B82F6)],
+                ),
+              ),
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Row(
+                        children: [
+                          // Avatar circle with first letter of name
+                          _buildAvatar(user),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Hello, ${user.fullName.split(' ').first}! 👋',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  user.email,
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.8),
+                                    fontSize: 13,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  user.gender.name,
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.7),
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          // The AppBar actions (top-right) — Logout button
+          actions: [
+            IconButton(
+              icon: const Icon(
+                Icons.logout_rounded,
+                color: Colors.white,
+                size: 22,
+              ),
+              tooltip: 'Logout',
+              onPressed: () => _handleLogout(context),
+            ),
+            const SizedBox(width: 4),
+          ],
+        ),
+
+        // ── Section Title ──────────────────────────────
+        const SliverToBoxAdapter(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(20, 24, 20, 12),
+            child: Text(
+              'My Subjects',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF111827),
+              ),
+            ),
+          ),
+        ),
+
+        // ── Subjects List ──────────────────────────────
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+          sliver: SliverList(
+            delegate: SliverChildBuilderDelegate((context, index) {
+              final subject = SubjectData.subjects[index];
+              return _SubjectCard(
+                subject: subject,
+                onTap: () {
+                  // Navigate to Detail screen, passing the subject
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => DetailScreen(subject: subject),
+                    ),
+                  );
+                },
+              );
+            }, childCount: SubjectData.subjects.length),
+          ),
+        ),
+      ],
     );
   }
 
@@ -204,8 +257,6 @@ class DashboardScreen extends StatelessWidget {
 
 // ============================================================
 // SUBJECT CARD WIDGET (private to this file)
-// The underscore _ prefix means it's not exported/used elsewhere.
-// Splitting it into its own widget keeps the build() method clean.
 // ============================================================
 class _SubjectCard extends StatelessWidget {
   final SubjectModel subject;

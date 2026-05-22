@@ -27,9 +27,10 @@ class CustomTextField extends StatelessWidget {
   final bool obscureText; // true = shows *** (password field)
   final Widget? suffixIcon; // optional icon on the right
   final TextInputType keyboardType; // number, email, text, etc.
-  final TextInputAction textInputAction; // what the keyboard "done" button does
+  final TextInputAction? textInputAction; // what the keyboard "done" button does
   final ValueChanged<String>? onChanged;
   final AutovalidateMode autovalidateMode;
+  final int maxLines;
 
   const CustomTextField({
     super.key,
@@ -43,6 +44,7 @@ class CustomTextField extends StatelessWidget {
     this.textInputAction = TextInputAction.next,
     this.onChanged,
     this.autovalidateMode = AutovalidateMode.onUserInteraction,
+    this.maxLines = 1,
   });
 
   @override
@@ -69,6 +71,7 @@ class CustomTextField extends StatelessWidget {
           textInputAction: textInputAction,
           onChanged: onChanged,
           autovalidateMode: autovalidateMode,
+          maxLines: maxLines,
           style: const TextStyle(fontSize: 15, color: Color(0xFF111827)),
           decoration: InputDecoration(
             hintText: hint,
