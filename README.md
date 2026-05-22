@@ -137,6 +137,21 @@ To submit the assignment, please place your screen captures in a `screenshots/` 
 
 ---
 
+## Assignment 2 Tasks
+
+The following screenshots demonstrate the completion of the API Integration CRUD assignment operations:
+
+![1](screenshots/1.png)
+![2](screenshots/2.png)
+![Screenshot 1](screenshots/Screenshot%202026-05-22%20154349.png)
+![Screenshot 2](screenshots/Screenshot%202026-05-22%20154427.png)
+![Screenshot 3](screenshots/Screenshot%202026-05-22%20154559.png)
+![Screenshot 4](screenshots/Screenshot%202026-05-22%20154632.png)
+![Screenshot 5](screenshots/Screenshot%202026-05-22%20154708.png)
+![Screenshot 6](screenshots/Screenshot%202026-05-22%20154735.png)
+
+---
+
 ### Core Screenshots Preview
 <img width="1920" height="897" alt="image" src="https://github.com/user-attachments/assets/765fc1f5-6cc1-45c5-be4a-82f8b4c1612f" />
 <img width="1908" height="901" alt="image" src="https://github.com/user-attachments/assets/e0d3a6e9-553f-4a3a-a597-b4e17632130b" />
@@ -144,9 +159,4 @@ To submit the assignment, please place your screen captures in a `screenshots/` 
 <img width="1911" height="854" alt="image" src="https://github.com/user-attachments/assets/5bf2cf7a-cf6f-48a8-b8f8-d46b8ce4bc83" />
 <img width="1912" height="890" alt="image" src="https://github.com/user-attachments/assets/cae3ed0b-7cfa-41fe-8ace-5a2f40fe559d" />
 <img width="1913" height="903" alt="image" src="https://github.com/user-attachments/assets/40e29602-7149-4150-89e3-f282eed04280" />
-
-
-
-
-
 
