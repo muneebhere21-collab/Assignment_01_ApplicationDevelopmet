@@ -143,12 +143,12 @@ The following screenshots demonstrate the completion of the API Integration CRUD
 
 ![1](screenshots/1.png)
 ![2](screenshots/2.png)
-![Screenshot 1](screenshots/Screenshot%202026-05-22%20154349.png)
-![Screenshot 2](screenshots/Screenshot%202026-05-22%20154427.png)
-![Screenshot 3](screenshots/Screenshot%202026-05-22%20154559.png)
-![Screenshot 4](screenshots/Screenshot%202026-05-22%20154632.png)
-![Screenshot 5](screenshots/Screenshot%202026-05-22%20154708.png)
-![Screenshot 6](screenshots/Screenshot%202026-05-22%20154735.png)
+![Screenshot 3](screenshots/screenshot_3.png)
+![Screenshot 4](screenshots/screenshot_4.png)
+![Screenshot 5](screenshots/screenshot_5.png)
+![Screenshot 6](screenshots/screenshot_6.png)
+![Screenshot 7](screenshots/screenshot_7.png)
+![Screenshot 8](screenshots/screenshot_8.png)
 
 ---
 
