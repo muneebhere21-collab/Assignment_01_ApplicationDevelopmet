@@ -12,10 +12,17 @@ final localStorageServiceProvider = Provider<LocalStorageService>((ref) {
   return LocalStorageService();
 });
 
+// Provider for Offline State
+final isOfflineProvider = StateProvider<bool>((ref) => false);
+
 final courseRepositoryProvider = Provider<CourseRepository>((ref) {
   return CourseRepository(
     ref.read(courseServiceProvider),
     ref.read(localStorageServiceProvider),
+    (isOffline) {
+      // Delay the state update to avoid 'setState during build' errors
+      Future.microtask(() => ref.read(isOfflineProvider.notifier).state = isOffline);
+    },
   );
 });
 

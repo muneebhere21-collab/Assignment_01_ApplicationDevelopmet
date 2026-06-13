@@ -5,17 +5,20 @@ import '../services/local_storage_service.dart';
 class CourseRepository {
   final CourseService _courseService;
   final LocalStorageService _localStorageService;
+  final void Function(bool) _onOfflineStateChanged;
 
-  CourseRepository(this._courseService, this._localStorageService);
+  CourseRepository(this._courseService, this._localStorageService, this._onOfflineStateChanged);
 
   Future<List<CourseModel>> fetchCourses() async {
     try {
       // Try to fetch from API
       final courses = await _courseService.getCourses();
+      _onOfflineStateChanged(false);
       // Save to local cache
       await _localStorageService.saveCourses(courses);
       return courses;
     } catch (e) {
+      _onOfflineStateChanged(true);
       // If API fails, try to load from local cache
       final cachedCourses = await _localStorageService.getCachedCourses();
       if (cachedCourses != null && cachedCourses.isNotEmpty) {

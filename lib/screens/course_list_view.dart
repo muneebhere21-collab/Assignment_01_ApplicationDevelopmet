@@ -172,6 +172,7 @@ class _CourseListViewState extends ConsumerState<CourseListView> {
           builder: (context) {
             final coursesAsync = ref.watch(courseListProvider);
             final filteredAsync = ref.watch(filteredCourseListProvider);
+            final isOffline = ref.watch(isOfflineProvider);
             
             final isLoading = coursesAsync.isLoading;
             final hasError = coursesAsync.hasError;
@@ -182,6 +183,31 @@ class _CourseListViewState extends ConsumerState<CourseListView> {
               controller: _scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
+                // ── Offline Banner ─────────────────────────────────
+                if (isOffline)
+                  SliverToBoxAdapter(
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                      color: const Color(0xFFFEF2F2),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.wifi_off_rounded, size: 16, color: Color(0xFFEF4444)),
+                          SizedBox(width: 8),
+                          Text(
+                            'Offline Mode - Showing Cached Data',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFFEF4444),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
                 // ── Collapsing App Bar ─────────────────────────
                 SliverAppBar(
                   expandedHeight: 200,
