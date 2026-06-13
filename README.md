@@ -26,7 +26,7 @@ A complete multi-screen Flutter application featuring user authentication, form 
 - **Networking:** HTTP (`http` package)
 - **Local Persistence:** Hive (`hive`, `hive_flutter`) & SharedPreferences
 
-## Extension Assignment Rubric Requirements
+## Assignment 03: Extension Assignment Rubric Requirements
 
 ### Tools and Packages Used
 - **State Management**: `flutter_riverpod` (Modern, robust provider-based state management).
@@ -203,7 +203,7 @@ The following screenshots demonstrate the completion of the API Integration CRUD
 
 ---
 
-## Extension Assignment: Offline Cache & State Management Screenshots
+## Assignment 03: Offline Cache & State Management Screenshots
 
 | # | Screen Name / Operation | Suggested Filename | Description / Elements to Show | Status |
 |---|------------------------|--------------------|---------------------------------|--------|
