@@ -207,13 +207,16 @@ The following screenshots demonstrate the completion of the API Integration CRUD
 
 | # | Screen Name / Operation | Suggested Filename | Description / Elements to Show | Status |
 |---|------------------------|--------------------|---------------------------------|--------|
-| 1 | **Pull to Refresh** | `pull_to_refresh.png` | RefreshIndicator being pulled down on the list | Complete |
-| 2 | **Search Functionality** | `search_filtered.png` | Searching a course name successfully | Complete |
-| 3 | **Empty Search Results** | `search_empty.png` | Fallback UI when search doesn't match any query | Complete |
-| 4 | **Offline Mode (Cached Data)**| `offline_mode_cached.png`| Emulator with Wi-Fi off showing Hive cached records | Complete |
-| 5 | **Optimistic Rollback** | `optimistic_rollback.png`| Snackbar showing error after optimistic UI rollback | Complete |
+| 1 | **Pull to Refresh** | `Pull to refresh.png` | RefreshIndicator being pulled down on the list | Complete |
+| 2 | **Search Functionality** | `Search Filter.png` | Searching a course name successfully | Complete |
+| 3 | **Empty Search Results** | `Search Empty.png` | Fallback UI when search doesn't match any query | Complete |
+| 4 | **Offline Mode (Cached Data)**| `offline_mode_cached.png`| Emulator with Wi-Fi off showing Hive cached records | Missing |
+| 5 | **Optimistic Rollback** | `Optimistic Roll BAck.png`| Snackbar showing error after optimistic UI rollback | Complete |
 
 > Add the above extension screenshots to the `screenshots/` directory.
 
 ### Extension Screenshots Preview
-*(Place extension screenshots here)*
+![Pull to Refresh](screenshots/Pull%20to%20refresh.png)
+![Search Filter](screenshots/Search%20Filter.png)
+![Search Empty](screenshots/Search%20Empty.png)
+![Optimistic Rollback](screenshots/Optimistic%20Roll%20BAck.png)
