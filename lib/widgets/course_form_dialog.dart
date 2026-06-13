@@ -7,26 +7,25 @@
 // ============================================================
 
 import 'package:flutter/material.dart';
-import '../controllers/course_controller.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/course_provider.dart';
 import '../models/course_model.dart';
 import '../validators/app_validator.dart';
 import 'custom_text_field.dart';
 
-class CourseFormDialog extends StatefulWidget {
+class CourseFormDialog extends ConsumerStatefulWidget {
   final CourseModel? course; // null = Add Course, non-null = Edit Course
-  final CourseController controller;
 
   const CourseFormDialog({
     super.key,
     this.course,
-    required this.controller,
   });
 
   @override
-  State<CourseFormDialog> createState() => _CourseFormDialogState();
+  ConsumerState<CourseFormDialog> createState() => _CourseFormDialogState();
 }
 
-class _CourseFormDialogState extends State<CourseFormDialog> {
+class _CourseFormDialogState extends ConsumerState<CourseFormDialog> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _titleController;
   late final TextEditingController _bodyController;
@@ -57,25 +56,26 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
       _errorMessage = null;
     });
 
-    final success = _isEditing
-        ? await widget.controller.updateCourse(
-            widget.course!.id,
-            _titleController.text.trim(),
-            _bodyController.text.trim(),
-          )
-        : await widget.controller.addCourse(
-            _titleController.text.trim(),
-            _bodyController.text.trim(),
-          );
-
-    if (!mounted) return;
-
-    if (success) {
+    try {
+      if (_isEditing) {
+        await ref.read(courseListProvider.notifier).updateCourse(
+          widget.course!.id,
+          _titleController.text.trim(),
+          _bodyController.text.trim(),
+        );
+      } else {
+        await ref.read(courseListProvider.notifier).addCourse(
+          _titleController.text.trim(),
+          _bodyController.text.trim(),
+        );
+      }
+      if (!mounted) return;
       Navigator.pop(context, true); // Return true to indicate success
-    } else {
+    } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isSubmitting = false;
-        _errorMessage = widget.controller.errorMessage ?? 'Something went wrong';
+        _errorMessage = e.toString().replaceAll('Exception: ', '');
       });
     }
   }

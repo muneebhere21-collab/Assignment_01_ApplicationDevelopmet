@@ -12,7 +12,6 @@
 
 import 'package:flutter/material.dart';
 import '../controllers/auth_controller.dart';
-import '../controllers/course_controller.dart';
 import '../controllers/subject_data.dart';
 import '../models/user_model.dart';
 import 'course_list_view.dart';
@@ -29,13 +28,11 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  late final CourseController _courseController;
   int _currentIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    _courseController = CourseController();
   }
 
   void _handleLogout(BuildContext context) {
@@ -63,7 +60,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           _buildHomeDashboard(context, user),
           CourseListView(
-            controller: _courseController,
             authController: widget.authController,
           ),
         ],

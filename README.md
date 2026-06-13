@@ -22,9 +22,9 @@ A complete multi-screen Flutter application featuring user authentication, form 
 ## Tech Stack
 - **Framework:** Flutter
 - **Language:** Dart
-- **State Management:** ChangeNotifier / ListenableBuilder
-- **Networking:** HTTP (http package)
-- **Local Persistence:** SharedPreferences
+- **State Management:** Riverpod (`flutter_riverpod`)
+- **Networking:** HTTP (`http` package)
+- **Local Persistence:** Hive (`hive`, `hive_flutter`) & SharedPreferences
 
 ## Course API Integration
 
@@ -40,7 +40,7 @@ A dedicated Course Management module has been integrated into the student portal
   - `DELETE /posts/{id}`: Remove a course record (simulated).
 
 ### 2. Version Control Branch Details
-- **Branch Name:** `feature/course-api-integration`
+- **Branch Name:** `feature/offline-cache-and-state-manangement`
 
 ### 3. Setup and Run Instructions
 To set up and run the application locally on this branch:
@@ -83,24 +83,36 @@ lib/
     └── course_detail_screen.dart# Deep-dive detail screen displaying complete course body and metadata
 ```
 
-### 5. API Integration Flow Overview
-The data flow and state changes are driven reactively:
+### 5. API Integration Flow & Architecture Overview
+The architecture is structured around the **Repository Pattern** and **Riverpod** for robust state management.
+
+#### Offline & State Management Approach
+- **State Management**: Using `AsyncNotifierProvider` to manage the Course List state securely, including robust handling for `Loading`, `Data`, and `Error` states.
+- **Repository Pattern**: A new `CourseRepository` intermediates between `CourseService` (API calls) and `LocalStorageService` (Hive cache). 
+- **Offline First & Fallback**: Whenever the API returns an error or fails due to network constraints, the repository seamlessly falls back to caching mechanism from `LocalStorageService`.
+- **Optimistic UI Updates**: CRUD operations immediately alter the localized Riverpod state to keep the UI responsive, and then invoke the API call. If the API errors out, the state rolls back to its prior snapshot gracefully preventing data loss.
 
 ```mermaid
 sequenceDiagram
-    participant UI as Flutter UI (CourseListView / CourseFormDialog)
-    participant Ctrl as CourseController (ChangeNotifier)
-    participant Service as CourseService (HTTP Client)
-    participant API as JSONPlaceholder REST API
+    participant UI as Flutter UI (ConsumerWidget)
+    participant Provider as Riverpod AsyncNotifier
+    participant Repo as CourseRepository
+    participant Hive as LocalStorageService (Cache)
+    participant API as CourseService (HTTP)
 
-    UI->>Ctrl: Request Operation (e.g. addCourse, fetchCourses)
-    Note over Ctrl: Sets isLoading = true<br/>Clears errors<br/>Notifies UI
-    Ctrl->>Service: Network Call
-    Service->>API: HTTP Request (GET/POST/PUT/DELETE)
-    API-->>Service: HTTP JSON Response
-    Service-->>Ctrl: Returns parsed Model(s) / Success
-    Note over Ctrl: Updates local list state<br/>Sets isLoading = false<br/>Notifies UI (ListenableBuilder)
-    Ctrl-->>UI: UI Rebuilds with New State
+    UI->>Provider: fetchCourses()
+    Provider->>Repo: fetchCourses()
+    Repo->>API: getCourses()
+    alt Network Success
+        API-->>Repo: Returns Courses
+        Repo->>Hive: saveCourses(courses) (Cache Data)
+    else Network Failure
+        API--xRepo: Throws Exception
+        Repo->>Hive: getCachedCourses()
+        Hive-->>Repo: Returns Cached Courses
+    end
+    Repo-->>Provider: Returns Courses
+    Provider-->>UI: Updates UI State (Data)
 ```
 
 ---
@@ -160,3 +172,19 @@ The following screenshots demonstrate the completion of the API Integration CRUD
 <img width="1912" height="890" alt="image" src="https://github.com/user-attachments/assets/cae3ed0b-7cfa-41fe-8ace-5a2f40fe559d" />
 <img width="1913" height="903" alt="image" src="https://github.com/user-attachments/assets/40e29602-7149-4150-89e3-f282eed04280" />
 
+---
+
+## Extension Assignment: Offline Cache & State Management Screenshots
+
+| # | Screen Name / Operation | Suggested Filename | Description / Elements to Show | Status |
+|---|------------------------|--------------------|---------------------------------|--------|
+| 1 | **Pull to Refresh** | `pull_to_refresh.png` | RefreshIndicator being pulled down on the list | Complete |
+| 2 | **Search Functionality** | `search_filtered.png` | Searching a course name successfully | Complete |
+| 3 | **Empty Search Results** | `search_empty.png` | Fallback UI when search doesn't match any query | Complete |
+| 4 | **Offline Mode (Cached Data)**| `offline_mode_cached.png`| Emulator with Wi-Fi off showing Hive cached records | Complete |
+| 5 | **Optimistic Rollback** | `optimistic_rollback.png`| Snackbar showing error after optimistic UI rollback | Complete |
+
+> Add the above extension screenshots to the `screenshots/` directory.
+
+### Extension Screenshots Preview
+*(Place extension screenshots here)*

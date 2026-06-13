@@ -8,27 +8,26 @@
 
 import 'package:flutter/material.dart';
 import '../controllers/auth_controller.dart';
-import '../controllers/course_controller.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/course_provider.dart';
 import '../models/course_model.dart';
 import '../widgets/course_form_dialog.dart';
 import 'course_detail_screen.dart';
 import 'login_screen.dart';
 
-class CourseListView extends StatefulWidget {
-  final CourseController controller;
+class CourseListView extends ConsumerStatefulWidget {
   final AuthController authController;
 
   const CourseListView({
     super.key,
-    required this.controller,
     required this.authController,
   });
 
   @override
-  State<CourseListView> createState() => _CourseListViewState();
+  ConsumerState<CourseListView> createState() => _CourseListViewState();
 }
 
-class _CourseListViewState extends State<CourseListView> {
+class _CourseListViewState extends ConsumerState<CourseListView> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
@@ -36,12 +35,7 @@ class _CourseListViewState extends State<CourseListView> {
   @override
   void initState() {
     super.initState();
-    // Fetch courses on load if the list is empty
-    if (widget.controller.courses.isEmpty && !widget.controller.isLoading) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        widget.controller.fetchCourses();
-      });
-    }
+    // fetch courses handled by the AsyncNotifier's build method
   }
 
   @override
@@ -57,7 +51,6 @@ class _CourseListViewState extends State<CourseListView> {
       barrierDismissible: false,
       builder: (_) => CourseFormDialog(
         course: course,
-        controller: widget.controller,
       ),
     );
 
@@ -117,10 +110,10 @@ class _CourseListViewState extends State<CourseListView> {
     );
 
     if (confirm == true && mounted) {
-      final success = await widget.controller.deleteCourse(course.id);
-      if (!mounted) return;
+      try {
+        await ref.read(courseListProvider.notifier).deleteCourse(course.id);
+        if (!mounted) return;
 
-      if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Row(
@@ -135,10 +128,11 @@ class _CourseListViewState extends State<CourseListView> {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
-      } else {
+      } catch (e) {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(widget.controller.errorMessage ?? 'Failed to delete course.'),
+            content: Text(e.toString().replaceAll('Exception: ', '')),
             backgroundColor: const Color(0xFFEF4444),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -172,18 +166,17 @@ class _CourseListViewState extends State<CourseListView> {
         elevation: 4,
       ),
       body: RefreshIndicator(
-        onRefresh: () => widget.controller.fetchCourses(),
+        onRefresh: () => ref.read(courseListProvider.notifier).fetchCourses(),
         color: const Color(0xFF3B82F6),
-        child: ListenableBuilder(
-          listenable: widget.controller,
-          builder: (context, _) {
-            final isLoading = widget.controller.isLoading;
-            final courses = widget.controller.courses;
-            final hasError = widget.controller.hasError;
-            final filteredCourses = courses
-                .where((course) =>
-                    course.title.toLowerCase().contains(_searchQuery.toLowerCase()))
-                .toList();
+        child: Builder(
+          builder: (context) {
+            final coursesAsync = ref.watch(courseListProvider);
+            final filteredAsync = ref.watch(filteredCourseListProvider);
+            
+            final isLoading = coursesAsync.isLoading;
+            final hasError = coursesAsync.hasError;
+            final courses = coursesAsync.value ?? [];
+            final filteredCourses = filteredAsync.value ?? [];
 
             return CustomScrollView(
               controller: _scrollController,
@@ -257,7 +250,7 @@ class _CourseListViewState extends State<CourseListView> {
                 else if (hasError && courses.isEmpty)
                   SliverFillRemaining(
                     hasScrollBody: false,
-                    child: _buildErrorState(),
+                    child: _buildErrorState(coursesAsync.error!),
                   )
                 else if (courses.isEmpty)
                   SliverFillRemaining(
@@ -303,6 +296,7 @@ class _CourseListViewState extends State<CourseListView> {
                           setState(() {
                             _searchQuery = val.trim();
                           });
+                          ref.read(searchQueryProvider.notifier).state = val.trim();
                         },
                         style: const TextStyle(fontSize: 14, color: Color(0xFF111827)),
                         decoration: InputDecoration(
@@ -317,6 +311,7 @@ class _CourseListViewState extends State<CourseListView> {
                                     setState(() {
                                       _searchQuery = '';
                                     });
+                                    ref.read(searchQueryProvider.notifier).state = '';
                                   },
                                 )
                               : null,
@@ -367,6 +362,7 @@ class _CourseListViewState extends State<CourseListView> {
                                 setState(() {
                                   _searchQuery = '';
                                 });
+                                ref.read(searchQueryProvider.notifier).state = '';
                               },
                               style: TextButton.styleFrom(
                                 foregroundColor: const Color(0xFF3B82F6),
@@ -469,7 +465,7 @@ class _CourseListViewState extends State<CourseListView> {
   }
 
   // ── Error State UI ─────────────────────────────────────────
-  Widget _buildErrorState() {
+  Widget _buildErrorState(Object error) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32.0),
@@ -495,13 +491,13 @@ class _CourseListViewState extends State<CourseListView> {
             ),
             const SizedBox(height: 8),
             Text(
-              widget.controller.errorMessage ?? 'Please check your internet connection and try again.',
+              error.toString().replaceAll('Exception: ', ''),
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
-              onPressed: () => widget.controller.fetchCourses(),
+              onPressed: () => ref.read(courseListProvider.notifier).fetchCourses(),
               icon: const Icon(Icons.refresh_rounded),
               label: const Text('Retry Fetching'),
               style: ElevatedButton.styleFrom(
