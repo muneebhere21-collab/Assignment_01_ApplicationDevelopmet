@@ -1,5 +1,5 @@
 name: flutter_auth_app
-description: Multi-screen Flutter app with authentication, validation, and navigation.
+description: A comprehensive multi-screen Flutter application featuring user authentication, form validation, and session persistence, implementing Clean Architecture.
 
 publish_to: "none"
 
